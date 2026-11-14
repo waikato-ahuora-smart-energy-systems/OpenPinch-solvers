@@ -7,7 +7,7 @@
 #
 # One-time setup on PyPI: add a trusted publisher for the project
 # openpinch-solvers with owner waikato-ahuora-smart-energy-systems,
-# repository openpinch-solvers, workflow release.yml and environment pypi.
+# repository OpenPinch-solvers, workflow release.yml and environment pypi.
 # For the first release, add it as a "pending publisher".
 name: Release
 
