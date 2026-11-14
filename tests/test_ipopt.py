@@ -74,7 +74,7 @@ def test_runtime_libraries_are_bundled():
     site = Path(openpinch_solvers.__file__).resolve().parents[1]
     if sys.platform.startswith("linux"):
         out = subprocess.run(["ldd", exe], capture_output=True, text=True, check=True).stdout
-        system = re.compile(r"^(linux-vdso|ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)[.-]")
+        system = re.compile(r"^(linux-vdso|ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s|libz)[.-]")
         for line in out.splitlines():
             line = line.strip()
             if not line or "=>" not in line:
