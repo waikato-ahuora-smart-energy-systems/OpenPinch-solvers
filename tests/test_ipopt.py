@@ -94,6 +94,26 @@ def test_runtime_libraries_are_bundled():
         assert any(name.startswith("libgfortran") for name in bundled), bundled
 
 
+def test_runtime_sources_cover_bundled_libraries():
+    """Each bundled runtime library is listed with where its source is."""
+    package = Path(openpinch_solvers.__file__).resolve().parent
+    manifest = package / "runtime-sources.tsv"
+    rows = [line.split("\t") for line in manifest.read_text().splitlines() if line.strip()]
+    assert rows and all(len(row) == 4 for row in rows), rows
+    listed = {lib for row in rows for lib in row[1].split()}
+    assert all(row[2].startswith("https://") for row in rows), rows
+    if sys.platform == "darwin":
+        bundled = {p.name for p in (package / ".dylibs").glob("*.dylib")}
+    elif os.name == "nt":
+        bundled = {p.name for p in Path(openpinch_solvers.bin_directory).glob("*.dll")}
+    else:
+        libs = package.parent / "openpinch_solvers.libs"
+        # auditwheel renames libgfortran.so.5 to libgfortran-<hash>.so.5.0.0.
+        bundled = {re.sub(r"-[0-9a-f]{8}\.so\.(\d+).*", r".so.\1", p.name) for p in libs.glob("*.so*")}
+    assert bundled, "no bundled runtime libraries found"
+    assert bundled <= listed, f"not in runtime-sources.tsv: {bundled - listed}"
+
+
 def test_linear_solver_is_mumps(tmp_path):
     pyomo = pytest.importorskip("pyomo.environ")
     model = _hs071(pyomo)

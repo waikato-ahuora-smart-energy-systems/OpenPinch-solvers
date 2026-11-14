@@ -41,6 +41,12 @@ class SolverBuildHook(BuildHookInterface):
         for path in files:
             build_data["force_include"][str(path)] = f"openpinch_solvers/bin/{path.name}"
 
+        # Where the source of the bundled compiler runtime libraries is.
+        manifest = prefix / "share" / "openpinch-solvers" / "runtime-sources.tsv"
+        if not manifest.is_file():
+            raise RuntimeError(f"{manifest} does not exist; rerun scripts/build_ipopt.sh.")
+        build_data["force_include"][str(manifest)] = "openpinch_solvers/runtime-sources.tsv"
+
         build_data["pure_python"] = False
         build_data["tag"] = f"py3-none-{_platform_tag()}"
 

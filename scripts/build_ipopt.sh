@@ -294,6 +294,55 @@ else
   strip "$exe"
 fi
 
+# ------------------------------------------------- runtime library sources
+#
+# The wheel ships the compiler's runtime libraries (GPL-3.0 with the GCC
+# Runtime Library Exception, LGPL-2.1 for libquadmath). Record exactly which
+# packages they came from and where their source is, so the release can
+# attach that source. scripts/collect_sources.sh reads this manifest from
+# each wheel. Columns: description, libraries, source URL, SHA-256 ("-" when
+# the distribution publishes no checksum we can pin in advance).
+
+manifest="$prefix/share/openpinch-solvers/runtime-sources.tsv"
+mkdir -p "$(dirname "$manifest")"
+: > "$manifest"
+record() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" >> "$manifest"; }
+
+if [ "$platform" = linux ]; then
+  # auditwheel bundles the libraries outside the manylinux allow-list; of
+  # those ipopt needs only libgfortran and libquadmath (x86_64).
+  ldd "$exe" | awk '$3 ~ /^\// {print $3}' | while read -r lib; do
+    case "$(basename "$lib")" in libgfortran* | libquadmath*) ;; *) continue ;; esac
+    pkg="$(rpm -qf --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}' "$lib")"
+    srpm="$(rpm -qf --qf '%{SOURCERPM}' "$lib")"
+    url="$(dnf -q --enablerepo=baseos-source --enablerepo=appstream-source \
+      repoquery --location --arch=src "${srpm%.src.rpm}" | head -n1 | sed 's#^http://#https://#')"
+    if [ -z "$url" ]; then
+      echo "Could not find the source package $srpm of $lib" >&2
+      exit 1
+    fi
+    record "AlmaLinux 8 $pkg (source package $srpm)" "$(basename "$lib")" "$url" -
+  done
+elif [ "$platform" = macos ]; then
+  libs="libgfortran.5.dylib libquadmath.0.dylib libgcc_s.1.1.dylib"
+  record "GCC $MACOS_GCC_SOURCE_VERSION, built by conda-forge as libgfortran5 (gfortran $MACOS_GFORTRAN_VERSION from isuruf/gcc)" \
+    "$libs" "$MACOS_GCC_SOURCE_URL" "$MACOS_GCC_SOURCE_SHA256"
+  record "conda-forge recipe and patches used for that build" \
+    "$libs" "$MACOS_GCC_RECIPE_URL" "$MACOS_GCC_RECIPE_SHA256"
+else
+  db=/var/lib/pacman/local
+  for dll in "$prefix"/bin/*.dll; do
+    name="$(basename "$dll")"
+    owner="$(pacman -Qqo "$mingw_bin/$name")"
+    version="$(pacman -Q "$owner" | cut -d' ' -f2)"
+    base="$(sed -n '/^%BASE%$/{n;p;}' "$db/$owner-$version/desc")"
+    record "MSYS2 $owner $version (source package $base)" "$name" \
+      "https://repo.msys2.org/mingw/sources/$base-$version.src.tar.zst" -
+  done
+fi
+echo "Runtime library sources:"
+cat "$manifest"
+
 log "Built $exe"
 ls -l "$prefix/bin"
 case "$platform" in
