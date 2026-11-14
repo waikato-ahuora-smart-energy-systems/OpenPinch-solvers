@@ -34,10 +34,11 @@ sha256_of() {
   fi
 }
 
-# Rows of: file name, description, used by, URL, expected SHA-256 or "-".
+# Rows of: file name, description, used by, URL, expected SHA-256 or "-",
+# bundled libraries built from it ("-" for the solver sources).
 rows="$(mktemp)"
 trap 'rm -f "$rows"' EXIT
-add() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5" >> "$rows"; }
+add() { printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5" "${6:--}" >> "$rows"; }
 
 all="all wheels"
 add "Ipopt-$IPOPT_VERSION.tar.gz" "Ipopt $IPOPT_VERSION (EPL-2.0)" "$all" "$IPOPT_URL" "$IPOPT_SHA256"
@@ -65,7 +66,7 @@ for wheel in "$wheels"/*.whl; do
     case "$url" in
       https://github.com/*/archive/*) file="$(echo "$url" | cut -d/ -f5)-$file" ;;
     esac
-    add "$file" "$description; bundled as $libraries" "$tag" "$url" "$sha"
+    add "$file" "$description" "$tag" "$url" "$sha" "$libraries"
   done < <(unzip -p "$wheel" openpinch_solvers/runtime-sources.tsv)
 done
 if [ "$found" -eq 0 ]; then
@@ -94,13 +95,16 @@ done
   echo "wheels. The build scripts that turn it into the wheels are in the"
   echo "repository at the release tag (scripts/build_ipopt.sh)."
   echo
-  echo "| File | What it is | Used by | Original URL |"
-  echo "| --- | --- | --- | --- |"
+  echo "| File | What it is | Bundled libraries built from it | Wheels | Original URL |"
+  echo "| --- | --- | --- | --- | --- |"
   cut -f1 "$rows" | awk '!seen[$0]++' | while read -r file; do
-    description="$(awk -F'\t' -v f="$file" '$1 == f {print $2; exit}' "$rows")"
+    # Every distinct value of column $1 among this file's rows, joined.
+    values() { awk -F'\t' -v f="$file" -v c="$1" '$1 == f {print $c}' "$rows" | tr ' ' '\n' | awk 'NF && !seen[$0]++' | paste -sd, - | sed 's/,/, /g'; }
+    description="$(awk -F'\t' -v f="$file" '$1 == f {print $2}' "$rows" | awk '!seen[$0]++' | paste -sd';' - | sed 's/;/; /g')"
     url="$(awk -F'\t' -v f="$file" '$1 == f {print $4; exit}' "$rows")"
     users="$(awk -F'\t' -v f="$file" '$1 == f {print $3}' "$rows" | awk '!seen[$0]++' | paste -sd, - | sed 's/,/, /g')"
-    echo "| \`$file\` | $description | $users | $url |"
+    libraries="$(values 6 | sed 's/^-$//')"
+    echo "| \`$file\` | $description | ${libraries:--} | $users | $url |"
   done
 } > "$out/SOURCES.md"
 

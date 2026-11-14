@@ -313,7 +313,6 @@ if [ "$platform" = linux ]; then
   # those ipopt needs only libgfortran and libquadmath (x86_64).
   ldd "$exe" | awk '$3 ~ /^\// {print $3}' | while read -r lib; do
     case "$(basename "$lib")" in libgfortran* | libquadmath*) ;; *) continue ;; esac
-    pkg="$(rpm -qf --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}' "$lib")"
     srpm="$(rpm -qf --qf '%{SOURCERPM}' "$lib")"
     url="$(dnf -q --enablerepo=baseos-source --enablerepo=appstream-source \
       repoquery --location --arch=src "${srpm%.src.rpm}" | head -n1 | sed 's#^http://#https://#')"
@@ -321,7 +320,7 @@ if [ "$platform" = linux ]; then
       echo "Could not find the source package $srpm of $lib" >&2
       exit 1
     fi
-    record "AlmaLinux 8 $pkg (source package $srpm)" "$(basename "$lib")" "$url" -
+    record "AlmaLinux 8 source package $srpm" "$(basename "$lib")" "$url" -
   done
 elif [ "$platform" = macos ]; then
   libs="libgfortran.5.dylib libquadmath.0.dylib libgcc_s.1.1.dylib"
@@ -336,7 +335,7 @@ else
     owner="$(pacman -Qqo "$mingw_bin/$name")"
     version="$(pacman -Q "$owner" | cut -d' ' -f2)"
     base="$(sed -n '/^%BASE%$/{n;p;}' "$db/$owner-$version/desc")"
-    record "MSYS2 $owner $version (source package $base)" "$name" \
+    record "MSYS2 source package $base $version" "$name" \
       "https://repo.msys2.org/mingw/sources/$base-$version.src.tar.zst" -
   done
 fi
