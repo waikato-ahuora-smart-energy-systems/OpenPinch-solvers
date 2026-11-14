@@ -37,8 +37,8 @@ test = ["pytest>=8", "pyomo>=6.10"]
 ipopt = "openpinch_solvers._cli:ipopt"
 
 [project.urls]
-Homepage = "https://github.com/waikato-ahuora-smart-energy-systems/openpinch-solvers"
-Issues = "https://github.com/waikato-ahuora-smart-energy-systems/openpinch-solvers/issues"
+Homepage = "https://github.com/waikato-ahuora-smart-energy-systems/OpenPinch-solvers"
+Issues = "https://github.com/waikato-ahuora-smart-energy-systems/OpenPinch-solvers/issues"
 OpenPinch = "https://github.com/waikato-ahuora-smart-energy-systems/OpenPinch"
 
 [tool.hatch.version]

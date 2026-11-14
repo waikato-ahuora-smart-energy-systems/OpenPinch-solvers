@@ -1,4 +1,4 @@
-# openpinch-solvers
+# OpenPinch-solvers
 
 Platform wheels that ship a current [Ipopt](https://github.com/coin-or/Ipopt)
 executable, so [OpenPinch](https://github.com/waikato-ahuora-smart-energy-systems/OpenPinch)
@@ -133,7 +133,7 @@ trusted publishing, and creates a GitHub release with the wheels attached.
 
 The PyPI side needs a one-time setup: a trusted publisher for the project
 `openpinch-solvers` with owner `waikato-ahuora-smart-energy-systems`,
-repository `openpinch-solvers`, workflow `release.yml` and environment `pypi`
+repository `OpenPinch-solvers`, workflow `release.yml` and environment `pypi`
 (a "pending publisher" before the first release), and a `pypi` environment
 in the repository settings.
 
