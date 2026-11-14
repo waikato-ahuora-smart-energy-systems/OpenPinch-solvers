@@ -129,7 +129,9 @@ installed in `C:\msys64` (or set `MSYS2_ROOT`).
 Bump `__version__` in `src/openpinch_solvers/__init__.py`, merge to `main`,
 then push a tag `v<version>` on that commit. `.github/workflows/release.yml`
 checks the tag, builds and tests the wheels, publishes them to PyPI through
-trusted publishing, and creates a GitHub release with the wheels attached.
+trusted publishing, and creates a GitHub release with the wheels and the
+source of every bundled component (`scripts/collect_sources.sh`, which also
+runs in CI on every pull request) attached.
 
 The PyPI side needs a one-time setup: a trusted publisher for the project
 `openpinch-solvers` with owner `waikato-ahuora-smart-energy-systems`,
@@ -163,5 +165,20 @@ directory:
   library.
 - `winpthreads-COPYING.txt`: `libwinpthread` (Windows).
 
-The sources of every component are available at the URLs pinned in
-`scripts/sources.sh`.
+- `SOURCES.txt`: where the source code of all of the above is.
+
+### Commercial use
+
+None of these licences restricts commercial use. Running the solver, or
+selling software that runs it, places no obligations on that software:
+Pyomo starts `ipopt` as a separate process. Redistributing the wheels means
+keeping the licence files with them and offering the source of the copyleft
+components (Ipopt, MUMPS, the GCC runtime libraries). Each GitHub release
+does that: it carries the source archives of every third-party component in
+its wheels, including the exact packages the bundled runtime libraries came
+from, with a `SOURCES.md` index and `SHA256SUMS`. Inside an installed wheel,
+`openpinch_solvers/runtime-sources.tsv` lists the runtime library sources.
+
+The HSL solvers, which need a paid licence for commercial use, are not
+included. A user who loads their own HSL library through Ipopt's linear
+solver loader needs their own HSL licence.

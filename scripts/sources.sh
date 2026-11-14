@@ -46,3 +46,13 @@ MACOS_GFORTRAN_URL_ARM64="https://github.com/isuruf/gcc/releases/download/gcc-${
 MACOS_GFORTRAN_SHA256_ARM64=84364eee32ba843d883fb8124867e2bf61a0cd73b6416d9897ceff7b85a24604
 MACOS_GFORTRAN_URL_X86_64="https://github.com/isuruf/gcc/releases/download/gcc-${MACOS_GFORTRAN_VERSION}/gfortran-darwin-x86_64-native.tar.gz"
 MACOS_GFORTRAN_SHA256_X86_64=981367dd0ad4335613e91bbee453d60b6669f5d7e976d18c7bdb7f1966f26ae4
+
+# Source of the macOS Fortran runtime that delocate bundles (libgfortran,
+# libquadmath, libgcc_s): GCC 11.3.0 plus the conda-forge recipe and patches
+# (gfortran_impl_osx-64-feedstock, build 26) that isuruf/gcc 11.3.0-2 was
+# packaged from. Attached to each release by collect_sources.sh.
+MACOS_GCC_SOURCE_VERSION=11.3.0
+MACOS_GCC_SOURCE_URL="https://ftp.gnu.org/gnu/gcc/gcc-${MACOS_GCC_SOURCE_VERSION}/gcc-${MACOS_GCC_SOURCE_VERSION}.tar.gz"
+MACOS_GCC_SOURCE_SHA256=98438e6cc7294298b474cf0da7655d9a8c8b796421bb0210531c294a950374ed
+MACOS_GCC_RECIPE_URL="https://github.com/conda-forge/gfortran_impl_osx-64-feedstock/archive/d79f11c18bae52de4ed41a528c3ecf4ac61751f3.tar.gz"
+MACOS_GCC_RECIPE_SHA256=4e8eb20351b97b716b12e3eb832afb95245469a7e5ef03d16d8e36220454bd41

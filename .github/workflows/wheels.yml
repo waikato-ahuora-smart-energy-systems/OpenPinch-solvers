@@ -1,5 +1,6 @@
 # Builds and tests the platform wheels on every pull request and every push
-# to main. The release workflow calls this workflow and publishes its wheels.
+# to main, then collects the source code of everything in them. The release
+# workflow calls this workflow and publishes both.
 name: Wheels
 
 on:
@@ -84,3 +85,30 @@ jobs:
           name: build-logs-${{ matrix.artifact }}
           path: build/work/*.log
           if-no-files-found: ignore
+
+  sources:
+    name: Collect sources
+    needs: wheels
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: wheel-*
+          path: wheelhouse
+          merge-multiple: true
+      - name: Download and verify the sources of every bundled component
+        run: |
+          bash scripts/collect_sources.sh wheelhouse sources
+          cat sources/SOURCES.md >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "Total: $(du -sh sources | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sources
+          path: sources/*
+          if-no-files-found: error
+          retention-days: 7

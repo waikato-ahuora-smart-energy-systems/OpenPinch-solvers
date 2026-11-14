@@ -1,0 +1,19 @@
+Source code of the bundled components
+=====================================
+
+The openpinch-solvers wheels contain binaries built from third-party source
+code: Ipopt (EPL-2.0), MUMPS (CeCILL-C), the AMPL Solver Library, OpenBLAS and
+LAPACK (BSD-3-Clause), and the GCC runtime libraries (GPL-3.0 with the GCC
+Runtime Library Exception; LGPL-2.1 for libquadmath).
+
+The complete corresponding source of each of them is attached to the GitHub
+release of the same version:
+
+    https://github.com/waikato-ahuora-smart-energy-systems/OpenPinch-solvers/releases
+
+SOURCES.md on each release says what every archive is and which wheels use
+it. The scripts that build the wheels from that source are in the
+repository at the release tag (scripts/build_ipopt.sh, with the versions and
+checksums in scripts/sources.sh). Inside an installed wheel,
+openpinch_solvers/runtime-sources.tsv names the exact packages the bundled
+runtime libraries came from and where their source is.
