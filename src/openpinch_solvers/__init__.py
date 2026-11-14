@@ -33,8 +33,9 @@ __version__ = "0.1.0"
 IPOPT_VERSION = "3.14.20"
 #: Version of MUMPS, Ipopt's linear solver, in this wheel.
 MUMPS_VERSION = "5.9.1"
-#: Snapshot of the AMPL Solver Library that reads Pyomo's ``.nl`` files.
-ASL_VERSION = "20241108"
+#: Version of the AMPL Solver Library (``ASL(...)`` in ``ipopt -v``) that
+#: reads Pyomo's ``.nl`` files. It comes from the solvers-20241108 snapshot.
+ASL_VERSION = "20241111"
 #: BLAS and LAPACK implementation the solver uses on this platform.
 BLAS_LAPACK = "Accelerate" if sys.platform == "darwin" else "OpenBLAS 0.3.34"
 
