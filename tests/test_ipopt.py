@@ -53,7 +53,7 @@ def test_version(flag):
     output = result.stdout + result.stderr
     assert result.returncode == 0, output
     assert re.search(rf"\bIpopt {re.escape(EXPECTED_IPOPT)}\b", output), output
-    assert "ASL(" in output, output
+    assert f"ASL({openpinch_solvers.ASL_VERSION})" in output, output
     assert openpinch_solvers.IPOPT_VERSION == EXPECTED_IPOPT
 
 
@@ -74,7 +74,7 @@ def test_runtime_libraries_are_bundled():
     site = Path(openpinch_solvers.__file__).resolve().parents[1]
     if sys.platform.startswith("linux"):
         out = subprocess.run(["ldd", exe], capture_output=True, text=True, check=True).stdout
-        system = re.compile(r"^(linux-vdso|ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)\b")
+        system = re.compile(r"^(linux-vdso|ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)[.-]")
         for line in out.splitlines():
             line = line.strip()
             if not line or "=>" not in line:

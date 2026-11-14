@@ -21,7 +21,7 @@ solver = pyo.SolverFactory("ipopt", executable=openpinch_solvers.ipopt_executabl
 | --- | --- | --- | --- |
 | Ipopt | 3.14.20 | interior point NLP solver, `ipopt` executable | EPL-2.0 |
 | MUMPS | 5.9.1 (via ThirdParty-Mumps 3.0.14) | sparse linear solver used by Ipopt | CeCILL-C |
-| AMPL Solver Library | 20241108 (via ThirdParty-ASL 2.1.0) | reads Pyomo's `.nl` files, writes `.sol` files | permissive notice |
+| AMPL Solver Library | 20241111 (snapshot solvers-20241108, via ThirdParty-ASL 2.1.0) | reads Pyomo's `.nl` files, writes `.sol` files | permissive notice |
 | OpenBLAS | 0.3.34 (Linux, Windows) | BLAS and LAPACK | BSD-3-Clause |
 | Accelerate | system framework (macOS) | BLAS and LAPACK | part of macOS |
 | GCC runtime | from the build toolchain | `libgfortran`, `libquadmath`, `libgcc_s` (and on Windows `libstdc++`, `libwinpthread`) | GPL-3.0 with the GCC Runtime Library Exception; LGPL-2.1 for `libquadmath`; MIT and BSD-3-Clause for `winpthreads` |
@@ -97,7 +97,7 @@ libraries linked into one executable:
 4. Ipopt, with MUMPS and the ASL.
 
 Toolchains: the `manylinux_2_28` image's GCC and gfortran on Linux; Apple
-clang and conda-forge's gfortran 15.2 (from
+clang and conda-forge's gfortran 11.3 (from
 [isuruf/gcc](https://github.com/isuruf/gcc/releases), pinned by checksum) on
 macOS; MSYS2's UCRT64 MinGW-w64 GCC and gfortran on Windows.
 

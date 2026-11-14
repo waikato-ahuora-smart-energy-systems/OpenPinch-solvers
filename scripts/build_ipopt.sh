@@ -140,7 +140,14 @@ elif [ "$platform" = macos ]; then
   if [ -z "${MACOSX_DEPLOYMENT_TARGET:-}" ]; then
     export MACOSX_DEPLOYMENT_TARGET=$([ "$arch" = arm64 ] && echo 11.0 || echo 10.13)
   fi
-  lapack_lflags="-framework Accelerate"
+  # The Fortran runtime is not in the MUMPS link flags, and clang++ links
+  # the executable, so name it here.
+  gf_lib="$work/gfortran/lib"
+  lapack_lflags="-framework Accelerate -L$gf_lib -lgfortran -lquadmath"
+  # The rpath lets the executable (and delocate) find
+  # @rpath/libgfortran.5.dylib; the header padding leaves delocate room to
+  # rewrite the install names.
+  export LDFLAGS="-Wl,-headerpad_max_install_names -Wl,-rpath,$gf_lib${LDFLAGS:+ $LDFLAGS}"
   "$F77" --version | head -n1
 else
   export CC=gcc CXX=g++ F77=gfortran FC=gfortran
@@ -280,8 +287,11 @@ if [ "$platform" = windows ]; then
     done < <(objdump -p "$file" | sed -n 's/^\s*DLL Name: //p' | tr -d '\r')
   done
   strip "$exe"
+elif [ "$platform" = macos ]; then
+  strip "$exe"
+  codesign --force --sign - "$exe"
 else
-  strip "$exe" 2> /dev/null || strip -S "$exe" || true
+  strip "$exe"
 fi
 
 log "Built $exe"

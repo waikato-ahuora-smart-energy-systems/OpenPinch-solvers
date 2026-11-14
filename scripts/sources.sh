@@ -35,12 +35,14 @@ OPENBLAS_VERSION=0.3.34
 OPENBLAS_URL="https://github.com/OpenMathLib/OpenBLAS/releases/download/v${OPENBLAS_VERSION}/OpenBLAS-${OPENBLAS_VERSION}.tar.gz"
 OPENBLAS_SHA256=cd7e129868320cc2d033afa920e31202dfe0b8066a5b66661900ccc0f197dfed
 
-# gfortran for macOS: conda-forge's GCC packaged by isuruf/gcc, the toolchain
-# SciPy and NumPy have used for their macOS wheels. Its runtime libraries
-# target macOS 10.13 (x86_64) and 11.0 (arm64), so wheels keep a low
-# deployment target. delocate bundles libgfortran into the wheel.
-MACOS_GFORTRAN_VERSION=15.2.0
+# gfortran 11.3 for macOS: conda-forge's GCC packaged by isuruf/gcc, the
+# toolchain SciPy and NumPy used for their macOS wheels. Its runtime
+# libraries target macOS 10.13 (x86_64) and 11.0 (arm64), so wheels keep a
+# low deployment target. delocate bundles libgfortran into the wheel. (The
+# newer gcc-15.2.0 arm64 asset ships x86_64 runtime libraries and dangling
+# symlinks, so it cannot be used.)
+MACOS_GFORTRAN_VERSION=11.3.0-2
 MACOS_GFORTRAN_URL_ARM64="https://github.com/isuruf/gcc/releases/download/gcc-${MACOS_GFORTRAN_VERSION}/gfortran-darwin-arm64-native.tar.gz"
-MACOS_GFORTRAN_SHA256_ARM64=999a91eef894d32f99e3b641520bef9f475055067f301f0f1947b8b716b5922a
+MACOS_GFORTRAN_SHA256_ARM64=84364eee32ba843d883fb8124867e2bf61a0cd73b6416d9897ceff7b85a24604
 MACOS_GFORTRAN_URL_X86_64="https://github.com/isuruf/gcc/releases/download/gcc-${MACOS_GFORTRAN_VERSION}/gfortran-darwin-x86_64-native.tar.gz"
-MACOS_GFORTRAN_SHA256_X86_64=fb03c1f37bf0258ada6e3e41698e3ad416fff4dad448fd746e01d8ccf1efdc0f
+MACOS_GFORTRAN_SHA256_X86_64=981367dd0ad4335613e91bbee453d60b6669f5d7e976d18c7bdb7f1966f26ae4
