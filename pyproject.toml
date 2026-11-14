@@ -1,0 +1,96 @@
+[build-system]
+requires = ["hatchling >= 1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openpinch-solvers"
+dynamic = ["version"]
+description = "Ipopt (with MUMPS and the AMPL Solver Library) as pip-installable platform wheels for OpenPinch"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Tim Walmsley", email = "tim.walmsley@waikato.ac.nz" },
+]
+# The Python code is MIT. The wheels also contain Ipopt (EPL-2.0), MUMPS
+# (CeCILL-C, with BSD-3-Clause and public-domain parts), the AMPL Solver
+# Library (permissive notice), OpenBLAS and LAPACK (BSD-3-Clause) and the GCC
+# runtime libraries (GPL-3.0 with the GCC Runtime Library Exception; LGPL-2.1
+# for libquadmath). See README.md and licenses/.
+license = "MIT AND EPL-2.0 AND CECILL-C AND BSD-3-Clause AND LicenseRef-AMPL-ASL AND GPL-3.0-or-later WITH GCC-exception-3.1 AND LGPL-2.1-or-later"
+license-files = ["LICENSE", "licenses/*.txt"]
+keywords = ["ipopt", "mumps", "nonlinear programming", "pyomo", "pinch analysis", "openpinch"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pyomo>=6.10"]
+
+[project.scripts]
+ipopt = "openpinch_solvers._cli:ipopt"
+
+[project.urls]
+Homepage = "https://github.com/waikato-ahuora-smart-energy-systems/openpinch-solvers"
+Issues = "https://github.com/waikato-ahuora-smart-energy-systems/openpinch-solvers/issues"
+OpenPinch = "https://github.com/waikato-ahuora-smart-energy-systems/OpenPinch"
+
+[tool.hatch.version]
+path = "src/openpinch_solvers/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openpinch_solvers"]
+exclude = ["src/openpinch_solvers/bin"]
+
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "hatch_build.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/scripts",
+  "/tests",
+  "/licenses",
+  "/hatch_build.py",
+  "/LICENSE",
+  "/README.md",
+]
+exclude = ["/src/openpinch_solvers/bin"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.cibuildwheel]
+# The wheel is py3-none-<platform>, so it is built once (with the first
+# Python) and cibuildwheel then only tests it with the others.
+build = ["cp312-*", "cp314-*"]
+skip = ["*-musllinux_*", "*_i686", "*-win32", "*-win_arm64", "cp31?t-*"]
+build-frontend = "build"
+build-verbosity = 1
+before-all = "bash scripts/build_ipopt.sh"
+test-requires = ["pytest>=8", "pyomo>=6.10"]
+test-sources = ["tests"]
+test-command = "python -m pytest -v -p no:cacheprovider tests"
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_x86_64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.13" }
+
+[tool.cibuildwheel.windows]
+before-all = "python scripts/msys2.py scripts/build_ipopt.sh"
+# build_ipopt.sh already put the MinGW runtime DLLs next to ipopt.exe, where
+# Windows looks for them. delvewheel only patches extension modules (there
+# are none), so the wheel needs no repair.
+repair-wheel-command = ""

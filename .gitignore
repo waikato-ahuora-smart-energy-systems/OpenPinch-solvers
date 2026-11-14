@@ -1,0 +1,9 @@
+build/
+dist/
+wheelhouse/
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.DS_Store
+src/openpinch_solvers/bin/
