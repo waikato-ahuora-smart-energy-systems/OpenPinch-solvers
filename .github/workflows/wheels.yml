@@ -1,0 +1,86 @@
+# Builds and tests the platform wheels on every pull request and every push
+# to main. The release workflow calls this workflow and publishes its wheels.
+name: Wheels
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wheels-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  wheels:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: manylinux x86_64
+            os: ubuntu-24.04
+            artifact: manylinux-x86_64
+          - name: manylinux aarch64
+            os: ubuntu-24.04-arm
+            artifact: manylinux-aarch64
+          - name: macOS arm64
+            os: macos-15
+            artifact: macos-arm64
+          - name: macOS x86_64
+            os: macos-15-intel
+            artifact: macos-x86_64
+          - name: Windows x86_64
+            os: windows-2025
+            artifact: windows-x86_64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build and test wheels
+        uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
+        with:
+          output-dir: wheelhouse
+
+      - name: Check and report the wheel
+        shell: bash
+        run: |
+          ls -l wheelhouse
+          count="$(find wheelhouse -name '*.whl' | wc -l | tr -d ' ')"
+          test "$count" = 1 || { echo "::error::Expected one wheel, found $count."; exit 1; }
+          python3 - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import pathlib, zipfile
+          wheel = next(pathlib.Path("wheelhouse").glob("*.whl"))
+          with zipfile.ZipFile(wheel) as zf:
+              infos = zf.infolist()
+          unpacked = sum(i.file_size for i in infos)
+          print(f"### {wheel.name}\n")
+          print(f"- wheel: {wheel.stat().st_size / 1e6:.2f} MB, unpacked: {unpacked / 1e6:.2f} MB\n")
+          print("| file | bytes |\n| --- | ---: |")
+          for i in sorted(infos, key=lambda i: -i.file_size):
+              if i.file_size > 50_000:
+                  print(f"| `{i.filename}` | {i.file_size:,} |")
+          EOF
+          cat "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: wheel-${{ matrix.artifact }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build-logs-${{ matrix.artifact }}
+          path: build/work/*.log
+          if-no-files-found: ignore
